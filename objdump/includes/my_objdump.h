@@ -6,7 +6,7 @@
 */
 
 #ifndef MY_OBJDUMP_H_
-#define MY_OBJDUMP_H_
+    #define MY_OBJDUMP_H_
 
 
 #endif /* !MY_OBJDUMP_H_ */
