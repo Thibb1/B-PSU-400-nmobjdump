@@ -11,7 +11,8 @@
 #
 #####################################################
 
-SOURCE = 	src/my_nm.c
+SOURCE =	src/my_nm.c \
+			src/my_symbol.c
 OBJS = $(SOURCE:.c=.o)
 OBJS_TEST = $(SOURCE_TEST:.c=.o)
 NAME = my_nm
