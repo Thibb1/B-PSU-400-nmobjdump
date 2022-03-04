@@ -26,22 +26,50 @@ char *capitalize(char *str)
     return (str);
 }
 
+void delete_sub(const char *sub, char *trimmed)
+{
+    char *str = trimmed;
+    int j = 0;
+
+    for (size_t i = 0; i < strlen(trimmed); ++i)
+        while (!strchr(sub, str[i]) && (trimmed[j++] = str[i++]));
+    trimmed[j] = '\0';
+}
+
 int cmp_sym(const void *a, const void *b)
 {
-    char *s1 = strdup(((t_sym)a)->name);
-    char *s2 = strdup(((t_sym)b)->name);
+    char *s1_ptr = strdup(((t_sym)a)->name);
+    char *s2_ptr = strdup(((t_sym)b)->name);
+    char *s1 = capitalize(s1_ptr);
+    char *s2 = capitalize(s2_ptr);
     int ret = 0;
-    char *s1_ptr = s1;
-    char *s2_ptr = s2;
 
     if (!IS_NULL(s1) && !IS_NULL(s2)) {
-        while (strchr("_@.", *s1) && *++s1);
-        while (strchr("_@.", *s2) && *++s2);
-        ret = strcmp(capitalize(s1), capitalize(s2));
+        delete_sub("_@.", s1);
+        delete_sub("_@.", s2);
+        ret = strcmp(s1, s2);
         if (ret == 0)
-            ret = strcmp(s2_ptr, s1_ptr);
+            ret = strcmp(((t_sym)a)->name, ((t_sym)b)->name);
+        DESTROY(s1_ptr);
+        DESTROY(s2_ptr);
     }
-    DESTROY(s1_ptr);
-    DESTROY(s2_ptr);
     return ret;
+}
+
+char *get_name(t_nm nm, char *name)
+{
+    int i = 0;
+    int len = 0;
+
+    if (name[i] == '/') {
+        len = atoi(&name[i + 1]);
+        if (len < nm->size) {
+            DESTROY(name);
+            name = strdup(&nm->names[len]);
+        }
+    }
+    while (name[i] != '\0' && name[i] != '/')
+        i++;
+    name[i] = '\0';
+    return name;
 }

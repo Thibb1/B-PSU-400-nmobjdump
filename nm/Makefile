@@ -11,7 +11,8 @@
 #
 #####################################################
 
-SOURCE =	src/my_nm.c \
+SOURCE =	src/main.c \
+			src/my_nm.c \
 			src/my_symbol.c \
 			src/my_elf.c \
 			src/my_utils.c

@@ -35,7 +35,7 @@ void get_symbol(t_nm nm, void *ptr)
 void get_symbols(t_nm nm)
 {
     void *ptr = S_TAB;
-    void *ptr_2 = ptr + S_SIZE;
+    void *ptr_2 = S_TAB + S_SIZE;
 
     SYM = calloc(sizeof(struct s_sym), S_SIZE);
     ASSERT(!IS_NULL(SYM), "calloc failed");

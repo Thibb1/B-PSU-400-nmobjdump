@@ -35,16 +35,41 @@ void get_shdr(t_nm nm)
         SHDR = (Elf64_Shdr *)((void *)EHDR + EHDR_32->e_shoff);
 }
 
-void relocatable_file(t_nm nm)
+int get_ar(t_nm nm, int skip_sym)
+{
+    clean_nm(nm);
+    HDR = calloc(1, ST_AR_SIZE + 1);
+    ASSERT(!IS_NULL(HDR), "malloc failed");
+    R_ASSERT_V(fread(HDR, ST_AR_SIZE, 1, nm->fd) == 1, 0);
+    ((char *)HDR)[ST_AR_SIZE] = '\0';
+    R_ASSERT_V(memcmp(HDR->ar_fmag, ARFMAG, 2) == 0, 0);
+    nm->name = get_name(nm, strdup(HDR->ar_name));
+    nm->size = atoi(HDR->ar_size);
+    if (skip_sym) {
+        DESTROY(nm->names);
+        nm->names = calloc(1, nm->size + 1);
+        ASSERT(!IS_NULL(nm->names), "malloc failed");
+        ASSERT(fread(nm->names, nm->size, 1, nm->fd) == 1, "fread failed");
+        ((char *)nm->names)[nm->size] = '\0';
+    }
+    return 1;
+}
+
+void ar_file(t_nm nm)
 {
     char tmp[SARMAG];
 
     ASSERT(fread(tmp, SARMAG, 1, nm->fd) == 1, "fread failed");
-    ASSERT(strncmp(tmp, ARMAG, SARMAG) != 0, "File is not an object file");
-    nm->is_relocatable = 1;
-    nm->size = get_size(nm);
-    get_ehdr(nm);
-    get_shdr(nm);
-    get_symbol_table(nm);
-    get_symbols(nm);
+    nm->is_ar = strncmp(tmp, ARMAG, SARMAG) == 0;
+    R_ASSERT(nm->is_ar);
+    ASSERT(get_ar(nm, 1), "Couldn't read ar header");
+    ASSERT(get_ar(nm, 1), "Couldn't read ar header");
+    while (get_ar(nm, 0)) {
+        get_ehdr(nm);
+        get_shdr(nm);
+        get_symbol_table(nm);
+        get_symbols(nm);
+        printf("\n%s:\n", nm->name);
+        print_nm(nm);
+    }
 }

@@ -39,17 +39,32 @@ if (assert) { \
     t = (result); \
 }
 
+    #define R_ASSERT_V(assert, val)  \
+if (!(assert)) { \
+    return (val); \
+}
+
+    #define R_ASSERT(assert) \
+if (!(assert)) { \
+    return; \
+}
+
     #define DESTROY(ptr) \
 { \
-    if (!IS_NULL(ptr)) \
+    if (!IS_NULL(ptr)) {\
         free(ptr); \
+        ptr = NULL; \
+    } \
 }
     #define EHDR (nm->ehdr)
     #define SHDR (nm->shdr)
     #define SBL (nm->symbols)
+    #define HDR (nm->hdr)
     #define EHDR_32 ((Elf32_Ehdr *)EHDR)
     #define SHDR_32 ((Elf32_Shdr *)SHDR)
     #define SBL_32 ((Elf32_Shdr *)SBL)
+
+    #define ST_AR_SIZE (sizeof(struct ar_hdr))
 
     #define SYM (nm->sym)
     #define ARCH (nm->arch)
@@ -67,6 +82,7 @@ if (assert) { \
 
     #define S_PRINT (ARCH == 32 ? "%10c %s\n" : "%18c %s\n")
     #define S_PRINT_V (ARCH == 32 ? "%08lx %c %s\n" : "%016lx %c %s\n")
+
     #define S_IDX (ARCH == 32 ? S_PTR_32->st_shndx : S_PTR->st_shndx)
     #define S_FLAG \
     (ARCH == 32 ? SHDR_32[S_IDX].sh_flags : SHDR[S_IDX].sh_flags)
@@ -85,6 +101,7 @@ if (assert) { \
 
 
     #define SYMBOL_CMP(str) (!strcmp((str), SYMBOL_NAME))
+    #define SYMBOL_WEAK(c) (c == 'U' || c == 'w' || c == 'v' || c == '?')
 
     #define IN_FILE(ptr) ((void *)(ptr) > (void *)((void *)EHDR + nm->size))
     #define IN_SHDR (!IN_FILE(SHDR + 1) && !IN_FILE(&SHDR[EHDR->e_shnum]))
@@ -106,7 +123,9 @@ struct s_nm
 {
     char *name;
     FILE *fd;
-    int is_relocatable;
+    int is_ar;
+    struct ar_hdr *hdr;
+    char *names;
     int i;
     int arch;
     off_t size;
@@ -124,6 +143,7 @@ char get_local_type(t_nm, void *, char);
 char get_type(t_nm, void *);
 
 // nm
+void clean_nm(t_nm nm);
 void destroy_nm(t_nm);
 t_nm init_nm(const char *);
 void print_nm(t_nm);
@@ -132,12 +152,14 @@ int my_nm(const char *, const int);
 // utils
 int cmp_end(const char *, const char *);
 char *capitalize(char *);
+void delete_sub(const char *, char *);
 int cmp_sym(const void *, const void *);
+char *get_name(t_nm, char *);
 
 // efl
 off_t get_size(t_nm);
 void get_ehdr(t_nm);
 void get_shdr(t_nm);
-void relocatable_file(t_nm);
-
+int get_ar(t_nm, int);
+void ar_file(t_nm);
 #endif /* !MY_NM_H_ */
