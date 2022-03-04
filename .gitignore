@@ -4,3 +4,4 @@ my_objdump
 a.out
 libmy.a
 settings.json
+test.c

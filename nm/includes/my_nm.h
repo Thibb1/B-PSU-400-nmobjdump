@@ -57,9 +57,10 @@ if (assert) { \
     #define SYMBOL_PTR_32 ((char *)EHDR + SHDR_32[SBL_32->sh_link].sh_offset)
     #define SYMBOL_PTR \
     (ARCH == 32 ? SYMBOL_PTR_32 : (char *)EHDR + SHDR[SBL->sh_link].sh_offset)
-    #define SECTION_PTR ((char *)EHDR + SHDR[EHDR->e_shstrndx].sh_offset)
     #define SECTION_PTR_32 \
     ((char *)EHDR + SHDR_32[EHDR_32->e_shstrndx].sh_offset)
+    #define SECTION_PTR (ARCH == 32 ? SECTION_PTR_32 : \
+    (char *)EHDR + SHDR[EHDR->e_shstrndx].sh_offset)
 
     #define S_PTR ((Elf64_Sym *)ptr)
     #define S_PTR_32 ((Elf32_Sym *)ptr)
@@ -80,9 +81,7 @@ if (assert) { \
     #define ST_BIND (ARCH == 32 ? ELF32_ST_BIND(S_INF) : ELF64_ST_BIND(S_INF))
     #define ST_TYPE (ARCH == 32 ? ELF32_ST_TYPE(S_INF) : ELF64_ST_TYPE(S_INF))
     #define SYMBOL_NAME (&SYMBOL_PTR[S_NAME])
-    #define SECTION_NAME (ARCH == 32 ? \
-    &SECTION_PTR_32[SHDR_32[S_IDX].sh_name] : \
-    &SECTION_PTR[SHDR[S_IDX].sh_name])
+    #define SECTION_NAME (&SECTION_PTR[SHDR[S_IDX].sh_name])
 
 
     #define SYMBOL_CMP(str) (!strcmp((str), SYMBOL_NAME))
