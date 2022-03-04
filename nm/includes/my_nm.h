@@ -46,25 +46,51 @@ if (assert) { \
 }
     #define EHDR (nm->ehdr)
     #define SHDR (nm->shdr)
-    #define SYMBOLS (nm->symbols)
+    #define SBL (nm->symbols)
+    #define EHDR_32 ((Elf32_Ehdr *)EHDR)
+    #define SHDR_32 ((Elf32_Shdr *)SHDR)
+    #define SBL_32 ((Elf32_Shdr *)SBL)
+
     #define SYM (nm->sym)
     #define ARCH (nm->arch)
 
-    #define SYMBOL_PTR ((char *)EHDR + SHDR[SYMBOLS->sh_link].sh_offset)
+    #define SYMBOL_PTR_32 ((char *)EHDR + SHDR_32[SBL_32->sh_link].sh_offset)
+    #define SYMBOL_PTR \
+    (ARCH == 32 ? SYMBOL_PTR_32 : (char *)EHDR + SHDR[SBL->sh_link].sh_offset)
     #define SECTION_PTR ((char *)EHDR + SHDR[EHDR->e_shstrndx].sh_offset)
+    #define SECTION_PTR_32 \
+    ((char *)EHDR + SHDR_32[EHDR_32->e_shstrndx].sh_offset)
 
-    #define SYMBOL_NAME (&SYMBOL_PTR[s->st_name])
-    #define SECTION_NAME (&SECTION_PTR[SHDR[s->st_shndx].sh_name])
+    #define S_PTR ((Elf64_Sym *)ptr)
+    #define S_PTR_32 ((Elf32_Sym *)ptr)
 
-    #define S_FLAG (SHDR[idx].sh_flags)
-    #define S_TYPE (SHDR[idx].sh_type)
-    #define S_INF (s->st_info)
+    #define S_PRINT (ARCH == 32 ? "%10c %s\n" : "%18c %s\n")
+    #define S_PRINT_V (ARCH == 32 ? "%08lx %c %s\n" : "%016lx %c %s\n")
+    #define S_IDX (ARCH == 32 ? S_PTR_32->st_shndx : S_PTR->st_shndx)
+    #define S_FLAG \
+    (ARCH == 32 ? SHDR_32[S_IDX].sh_flags : SHDR[S_IDX].sh_flags)
+    #define S_TYPE (ARCH == 32 ? SHDR_32[S_IDX].sh_type : SHDR[S_IDX].sh_type)
+    #define S_INF (ARCH == 32 ? S_PTR_32->st_info : S_PTR->st_info)
+    #define S_OFFSET (ARCH == 32 ? SBL_32->sh_offset : SBL->sh_offset)
+    #define S_ENTSIZE (ARCH == 32 ? SBL_32->sh_entsize : SBL->sh_entsize)
+    #define S_SIZE (ARCH == 32 ? SBL_32->sh_size : SBL->sh_size)
+    #define S_VAL (ARCH == 32 ? S_PTR_32->st_value : S_PTR->st_value)
+    #define S_NAME (ARCH == 32 ? S_PTR_32->st_name : S_PTR->st_name)
+    #define S_TAB ((void *)EHDR + S_OFFSET)
     #define ST_BIND (ARCH == 32 ? ELF32_ST_BIND(S_INF) : ELF64_ST_BIND(S_INF))
     #define ST_TYPE (ARCH == 32 ? ELF32_ST_TYPE(S_INF) : ELF64_ST_TYPE(S_INF))
+    #define SYMBOL_NAME (&SYMBOL_PTR[S_NAME])
+    #define SECTION_NAME (ARCH == 32 ? \
+    &SECTION_PTR_32[SHDR_32[S_IDX].sh_name] : \
+    &SECTION_PTR[SHDR[S_IDX].sh_name])
+
 
     #define SYMBOL_CMP(str) (!strcmp((str), SYMBOL_NAME))
 
     #define IN_FILE(ptr) ((void *)(ptr) > (void *)((void *)EHDR + nm->size))
+    #define IN_SHDR (!IN_FILE(SHDR + 1) && !IN_FILE(&SHDR[EHDR->e_shnum]))
+    #define IN_SHDR_32 \
+    (!IN_FILE(EHDR_32 + 1) && !IN_FILE(&EHDR_32[EHDR_32->e_shnum]))
 
 typedef struct s_nm *t_nm;
 
@@ -93,10 +119,10 @@ struct s_nm
 
 // symbols
 void get_symbol_table(t_nm);
-void get_symbol(t_nm, Elf64_Sym *);
+void get_symbol(t_nm, void *);
 void get_symbols(t_nm);
-char get_local_type(t_nm, Elf64_Sym *);
-char get_type(t_nm, Elf64_Sym *);
+char get_local_type(t_nm, void *, char);
+char get_type(t_nm, void *);
 
 // nm
 void destroy_nm(t_nm);

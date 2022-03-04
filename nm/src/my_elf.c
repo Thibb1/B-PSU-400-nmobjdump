@@ -29,7 +29,10 @@ void get_ehdr(t_nm nm)
 
 void get_shdr(t_nm nm)
 {
-    SHDR = (Elf64_Shdr *)((void *)EHDR + EHDR->e_shoff);
+    if (ARCH == 64)
+        SHDR = (Elf64_Shdr *)((void *)EHDR + EHDR->e_shoff);
+    else
+        SHDR = (Elf64_Shdr *)((void *)EHDR + EHDR_32->e_shoff);
 }
 
 void relocatable_file(t_nm nm)

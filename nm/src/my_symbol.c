@@ -9,44 +9,45 @@
 
 void get_symbol_table(t_nm nm)
 {
-    SYMBOLS = NULL;
-    if (IN_FILE(SHDR + 1) || IN_FILE(&SHDR[EHDR->e_shnum]))
-        PRINT_ERROR(FORMAT);
+    SBL = NULL;
+    ASSERT(ARCH == 32 || IN_SHDR, FORMAT);
+    ASSERT(ARCH == 64 || IN_SHDR_32, FORMAT);
     for (int i = 0; i < EHDR->e_shnum; i++) {
-        if (SHDR[i].sh_type == SHT_SYMTAB)
-            SYMBOLS = &SHDR[i];
+        if (ARCH == 64 && SHDR[i].sh_type == SHT_SYMTAB)
+            SBL = (Elf64_Shdr *)&SHDR[i];
+        if (ARCH == 32 && SHDR_32[i].sh_type == SHT_SYMTAB)
+            SBL = (Elf64_Shdr *)&SHDR_32[i];
     }
-    ASSERT(!IS_NULL(SYMBOLS), "no symbols");
+    ASSERT(!IS_NULL(SBL), "no symbols");
 }
 
-void get_symbol(t_nm nm, Elf64_Sym *s)
+void get_symbol(t_nm nm, void *ptr)
 {
-    if (s->st_info == STT_SECTION && s->st_shndx <= EHDR->e_shnum
-        && s->st_name == 0)
+    if (S_INF == STT_SECTION && S_IDX <= EHDR->e_shnum && S_NAME == 0)
         SYM[nm->i].name = SECTION_NAME;
     else
         SYM[nm->i].name = SYMBOL_NAME;
-    SYM[nm->i].value = s->st_value;
-    SYM[nm->i].type = get_type(nm, s);
+    SYM[nm->i].value = (Elf64_Addr)S_VAL;
+    SYM[nm->i].type = get_type(nm, ptr);
     nm->i++;
 }
 
 void get_symbols(t_nm nm)
 {
-    Elf64_Sym *s = ((void *)EHDR + SYMBOLS->sh_offset);
+    void *ptr = S_TAB;
+    void *ptr_2 = ptr + S_SIZE;
 
-    SYM = calloc(sizeof(struct s_sym), SYMBOLS->sh_size);
+    SYM = calloc(sizeof(struct s_sym), S_SIZE);
     ASSERT(!IS_NULL(SYM), "calloc failed");
-    while ((void *)s < (void *)EHDR + SYMBOLS->sh_offset + SYMBOLS->sh_size) {
-        if (s->st_name > 0 && s->st_info != STT_FILE)
-            get_symbol(nm, s);
-        s++;
+    while (ptr < ptr_2) {
+        if (S_NAME > 0 && S_INF != STT_FILE)
+            get_symbol(nm, ptr);
+        ptr += S_ENTSIZE;
     }
 }
 
-char get_local_type(t_nm nm, Elf64_Sym *s)
+char get_local_type(t_nm nm, void *ptr, char t)
 {
-    char t = '?';
     ASSERT_VAL(SYMBOL_CMP(".bss"), 'B');
     ASSERT_VAL(SYMBOL_CMP(".debug"), 'N');
     ASSERT_VAL(SYMBOL_CMP("__abi_tag") || SYMBOL_CMP(".rodata")
@@ -60,15 +61,14 @@ char get_local_type(t_nm nm, Elf64_Sym *s)
     return t;
 }
 
-char get_type(t_nm nm, Elf64_Sym *s)
+char get_type(t_nm nm, void *ptr)
 {
     char t = '?';
-    Elf64_Section idx = s->st_shndx;
 
     ASSERT_VAL(ST_BIND == STB_GNU_UNIQUE, 'u');
-    ASSERT_VAL(idx == SHN_UNDEF, 'U');
-    ASSERT_VAL(idx == SHN_ABS, 'A');
-    ASSERT_VAL(idx == SHN_COMMON, 'C');
+    ASSERT_VAL(S_IDX == SHN_UNDEF, 'U');
+    ASSERT_VAL(S_IDX == SHN_ABS, 'A');
+    ASSERT_VAL(S_IDX == SHN_COMMON, 'C');
     ASSERT_VAL(S_TYPE == SHT_NOBITS && S_FLAG == (SHF_ALLOC | SHF_WRITE), 'B');
     if (S_TYPE == SHT_PROGBITS) {
         ASSERT_VAL(S_FLAG == SHF_ALLOC, 'R');
@@ -78,7 +78,7 @@ char get_type(t_nm nm, Elf64_Sym *s)
     ASSERT_VAL(S_TYPE == SHT_DYNAMIC || S_TYPE == SHT_DYNSYM, 'D');
     ASSERT_VAL(ST_BIND == STB_WEAK, t == 'U' ? 'w' : 'W');
     ASSERT_VAL((t == 'w' || t == 'W') && ST_TYPE == STT_OBJECT, t - 1);
-    ASSERT_VAL(t == '?', get_local_type(nm, s));
+    ASSERT_VAL(t == '?', get_local_type(nm, ptr, t));
     ASSERT_VAL(t != '?' && ST_BIND == STB_LOCAL, t + 32);
     return t;
 }

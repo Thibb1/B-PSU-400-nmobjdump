@@ -35,7 +35,7 @@ t_nm init_nm(const char *filename)
     nm->arch = 64;
     EHDR = NULL;
     SHDR = NULL;
-    SYMBOLS = NULL;
+    SBL = NULL;
     SYM = NULL;
     return nm;
 }
@@ -45,9 +45,9 @@ void print_nm(t_nm nm)
     qsort(SYM, nm->i, sizeof(struct s_sym), cmp_sym);
     for (int i = 0; i < nm->i; i++) {
         if (SYM[i].value == 0)
-            printf("%18c %s\n", SYM[i].type, SYM[i].name);
+            printf(S_PRINT, SYM[i].type, SYM[i].name);
         else
-            printf("%016lx %c %s\n", SYM[i].value, SYM[i].type, SYM[i].name);
+            printf(S_PRINT_V, SYM[i].value, SYM[i].type, SYM[i].name);
     }
 }
 
