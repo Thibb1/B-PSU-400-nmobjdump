@@ -24,7 +24,9 @@ void get_ehdr(t_nm nm)
     ASSERT(fread(EHDR, nm->size, 1, nm->fd) == 1, "fread failed");
     ((char *)EHDR)[nm->size] = '\0';
     ASSERT(memcmp(EHDR->e_ident, ELFMAG, SELFMAG) == 0, FORMAT);
-    ARCH = EHDR->e_ident[EI_CLASS] == ELFCLASS32 ? 32 : 64;
+    ARCH = EHDR->e_ident[EI_CLASS] == ELFCLASS64 ? 64 : 0;
+    ARCH = EHDR->e_ident[EI_CLASS] == ELFCLASS32 ? 32 : ARCH;
+    ASSERT(ARCH == 64 || ARCH == 32, FORMAT);
 }
 
 void get_shdr(t_nm nm)
