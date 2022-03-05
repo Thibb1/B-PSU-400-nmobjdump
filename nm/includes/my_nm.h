@@ -69,44 +69,51 @@ if (!(assert)) { \
     #define SYM (nm->sym)
     #define ARCH (nm->arch)
 
+    #define IS_32 (ARCH == 32)
+
     #define SYMBOL_PTR_32 ((char *)EHDR + SHDR_32[SBL_32->sh_link].sh_offset)
     #define SYMBOL_PTR \
-    (ARCH == 32 ? SYMBOL_PTR_32 : (char *)EHDR + SHDR[SBL->sh_link].sh_offset)
-    #define SECTION_PTR_32 \
-    ((char *)EHDR + SHDR_32[EHDR_32->e_shstrndx].sh_offset)
-    #define SECTION_PTR (ARCH == 32 ? SECTION_PTR_32 : \
-    (char *)EHDR + SHDR[EHDR->e_shstrndx].sh_offset)
+    (IS_32 ? SYMBOL_PTR_32 : (char *)EHDR + SHDR[SBL->sh_link].sh_offset)
+
+    #define SH_ENT (IS_32 ? EHDR_32->e_shentsize : EHDR->e_shentsize)
+    #define SH_NUM (IS_32 ? EHDR_32->e_shnum : EHDR->e_shnum)
+    #define SH_STR (IS_32 ? EHDR_32->e_shstrndx : EHDR->e_shstrndx)
+
+    #define SECTION_PTR_32 ((char *)EHDR + SHDR_32[SH_STR].sh_offset)
+    #define SECTION_PTR \
+    (IS_32 ? SECTION_PTR_32 : (char *)EHDR + SHDR[SH_STR].sh_offset)
 
     #define S_PTR ((Elf64_Sym *)ptr)
     #define S_PTR_32 ((Elf32_Sym *)ptr)
 
-    #define S_PRINT (ARCH == 32 ? "%10c %s\n" : "%18c %s\n")
-    #define S_PRINT_V (ARCH == 32 ? "%08lx %c %s\n" : "%016lx %c %s\n")
+    #define SHDR_SIZE (IS_32 ? sizeof(Elf32_Shdr) : sizeof(Elf64_Shdr))
 
-    #define S_IDX (ARCH == 32 ? S_PTR_32->st_shndx : S_PTR->st_shndx)
-    #define S_FLAG \
-    (ARCH == 32 ? SHDR_32[S_IDX].sh_flags : SHDR[S_IDX].sh_flags)
-    #define S_TYPE (ARCH == 32 ? SHDR_32[S_IDX].sh_type : SHDR[S_IDX].sh_type)
-    #define S_INF (ARCH == 32 ? S_PTR_32->st_info : S_PTR->st_info)
-    #define S_OFFSET (ARCH == 32 ? SBL_32->sh_offset : SBL->sh_offset)
-    #define S_ENTSIZE (ARCH == 32 ? SBL_32->sh_entsize : SBL->sh_entsize)
-    #define S_SIZE (ARCH == 32 ? SBL_32->sh_size : SBL->sh_size)
-    #define S_VAL (ARCH == 32 ? S_PTR_32->st_value : S_PTR->st_value)
-    #define S_NAME (ARCH == 32 ? S_PTR_32->st_name : S_PTR->st_name)
+    #define S_PRINT (IS_32 ? "%10c %s\n" : "%18c %s\n")
+    #define S_PRINT_V (IS_32 ? "%08lx %c %s\n" : "%016lx %c %s\n")
+
+    #define S_IDX (IS_32 ? S_PTR_32->st_shndx : S_PTR->st_shndx)
+    #define S_FLAG (IS_32 ? SHDR_32[S_IDX].sh_flags : SHDR[S_IDX].sh_flags)
+    #define S_TYPE (IS_32 ? SHDR_32[S_IDX].sh_type : SHDR[S_IDX].sh_type)
+    #define S_INF (IS_32 ? S_PTR_32->st_info : S_PTR->st_info)
+    #define S_OFFSET (IS_32 ? SBL_32->sh_offset : SBL->sh_offset)
+    #define S_ENTSIZE (IS_32 ? SBL_32->sh_entsize : SBL->sh_entsize)
+    #define S_SIZE (IS_32 ? SBL_32->sh_size : SBL->sh_size)
+    #define S_VAL (IS_32 ? S_PTR_32->st_value : S_PTR->st_value)
+    #define S_VAL_S (IS_32 ? S_PTR_32->st_size : S_PTR->st_size)
+    #define S_NAME (IS_32 ? S_PTR_32->st_name : S_PTR->st_name)
     #define S_TAB ((void *)EHDR + S_OFFSET)
-    #define ST_BIND (ARCH == 32 ? ELF32_ST_BIND(S_INF) : ELF64_ST_BIND(S_INF))
-    #define ST_TYPE (ARCH == 32 ? ELF32_ST_TYPE(S_INF) : ELF64_ST_TYPE(S_INF))
+    #define ST_BIND (IS_32 ? ELF32_ST_BIND(S_INF) : ELF64_ST_BIND(S_INF))
+    #define ST_TYPE (IS_32 ? ELF32_ST_TYPE(S_INF) : ELF64_ST_TYPE(S_INF))
     #define SYMBOL_NAME (&SYMBOL_PTR[S_NAME])
     #define SECTION_NAME (&SECTION_PTR[SHDR[S_IDX].sh_name])
 
 
     #define SYMBOL_CMP(str) (!strcmp((str), SYMBOL_NAME))
-    #define SYMBOL_WEAK(c) (c == 'U' || c == 'w' || c == 'v' || c == '?')
+    #define SYMBOL_WEAK(c) (strchr("Uwv?", c) != NULL)
 
     #define IN_FILE(ptr) ((void *)(ptr) > (void *)((void *)EHDR + nm->size))
-    #define IN_SHDR (!IN_FILE(SHDR + 1) && !IN_FILE(&SHDR[EHDR->e_shnum]))
-    #define IN_SHDR_32 \
-    (!IN_FILE(EHDR_32 + 1) && !IN_FILE(&EHDR_32[EHDR_32->e_shnum]))
+    #define IN_SHDR (!IN_FILE(SHDR + 1) && !IN_FILE(&SHDR[SH_NUM]))
+    #define IN_SHDR_32 (!IN_FILE(SHDR_32 + 1) && !IN_FILE(&SHDR_32[SH_NUM]))
 
 typedef struct s_nm *t_nm;
 

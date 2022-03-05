@@ -29,10 +29,10 @@ void get_ehdr(t_nm nm)
 
 void get_shdr(t_nm nm)
 {
-    if (ARCH == 64)
-        SHDR = (Elf64_Shdr *)((void *)EHDR + EHDR->e_shoff);
+    if (IS_32)
+        SHDR = (Elf64_Shdr *)((void *)EHDR_32 + EHDR_32->e_shoff);
     else
-        SHDR = (Elf64_Shdr *)((void *)EHDR + EHDR_32->e_shoff);
+        SHDR = (Elf64_Shdr *)((void *)EHDR + EHDR->e_shoff);
 }
 
 int get_ar(t_nm nm, int skip_sym)

@@ -9,14 +9,17 @@
 
 void get_symbol_table(t_nm nm)
 {
+    void *ptr = ((void *)SHDR);
+    void *ptr_end = ((void *)SHDR + SH_NUM * SH_ENT);
+
     SBL = NULL;
-    ASSERT(ARCH == 32 || IN_SHDR, FORMAT);
-    ASSERT(ARCH == 64 || IN_SHDR_32, FORMAT);
-    for (int i = 0; i < EHDR->e_shnum; i++) {
-        if (ARCH == 64 && SHDR[i].sh_type == SHT_SYMTAB)
-            SBL = (Elf64_Shdr *)&SHDR[i];
-        if (ARCH == 32 && SHDR_32[i].sh_type == SHT_SYMTAB)
-            SBL = (Elf64_Shdr *)&SHDR_32[i];
+    ASSERT(IS_32 || IN_SHDR, FORMAT);
+    ASSERT(!IS_32 || IN_SHDR_32, FORMAT);
+    while (ptr < ptr_end) {
+        if ((IS_32 && ((Elf32_Shdr *)ptr)->sh_type == SHT_SYMTAB)
+            || (!IS_32 && ((Elf64_Shdr *)ptr)->sh_type == SHT_SYMTAB))
+            SBL = (Elf64_Shdr *)ptr;
+        ptr += SHDR_SIZE;
     }
     ASSERT(!IS_NULL(SBL), "no symbols");
 }
@@ -27,8 +30,9 @@ void get_symbol(t_nm nm, void *ptr)
         SYM[nm->i].name = SECTION_NAME;
     else
         SYM[nm->i].name = SYMBOL_NAME;
-    SYM[nm->i].value = (Elf64_Addr)S_VAL;
     SYM[nm->i].type = get_type(nm, ptr);
+    SYM[nm->i].value = (Elf64_Addr)S_VAL;
+    SYM[nm->i].value += SYM[nm->i].value ? 0 : (Elf64_Addr)S_VAL_S;
     nm->i++;
 }
 
