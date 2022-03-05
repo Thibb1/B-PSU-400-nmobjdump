@@ -13,9 +13,9 @@
 
 all:
 	make -C nm
-	mv nm/my_nm my_nm
+	cp nm/my_nm my_nm
 	make -C objdump
-	mv objdump/my_objdump my_objdump
+	cp objdump/my_objdump my_objdump
 
 clean:
 	make -C nm clean
