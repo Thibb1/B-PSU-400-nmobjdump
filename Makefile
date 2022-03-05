@@ -11,11 +11,15 @@
 #
 #####################################################
 
-all:
+nm:
 	make -C nm
 	cp nm/my_nm my_nm
+
+objdump:
 	make -C objdump
 	cp objdump/my_objdump my_objdump
+
+all: nm objdump
 
 clean:
 	make -C nm clean
@@ -28,4 +32,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re nm objdump

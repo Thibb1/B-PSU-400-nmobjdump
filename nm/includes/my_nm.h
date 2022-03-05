@@ -111,7 +111,7 @@ if (!(assert)) { \
     #define SYMBOL_CMP(str) (!strcmp((str), SYMBOL_NAME))
     #define SYMBOL_WEAK(c) (strchr("Uwv?", c) != NULL)
 
-    #define IN_FILE(ptr) ((void *)(ptr) > (void *)((void *)EHDR + nm->size))
+    #define IN_FILE(ptr) ((void *)(ptr) > (void *)(EHDR + nm->size))
     #define IN_SHDR (!IN_FILE(SHDR + 1) && !IN_FILE(&SHDR[SH_NUM]))
     #define IN_SHDR_32 (!IN_FILE(SHDR_32 + 1) && !IN_FILE(&SHDR_32[SH_NUM]))
 
