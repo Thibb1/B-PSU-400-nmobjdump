@@ -11,7 +11,11 @@
 #
 #####################################################
 
-SOURCE = 	src/my_objdump.c
+SOURCE = 	src/main.c \
+			src/my_objdump.c \
+			src/my_elf.c \
+			src/my_print.c \
+			src/my_utils.c
 OBJS = $(SOURCE:.c=.o)
 OBJS_TEST = $(SOURCE_TEST:.c=.o)
 NAME = my_objdump
