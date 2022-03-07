@@ -74,4 +74,5 @@ void ar_file(t_nm nm)
         printf("\n%s:\n", nm->name);
         print_nm(nm);
     }
+    destroy_nm(nm);
 }

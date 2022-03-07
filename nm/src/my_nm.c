@@ -39,7 +39,6 @@ t_nm init_nm(const char *filename)
     }
     nm->fd = fopen(filename, "r");
     nm->name = strdup(filename);
-    nm->arch = 64;
     return nm;
 }
 
@@ -62,10 +61,7 @@ int my_nm(const char *filename, const int is_single)
     if (!is_single)
         printf("\n%s:\n", nm->name);
     ar_file(nm);
-    if (nm->is_ar) {
-        destroy_nm(nm);
-        return 0;
-    }
+    R_ASSERT_V(!nm->is_ar, 0);
     nm->size = get_size(nm);
     get_ehdr(nm);
     get_shdr(nm);
