@@ -31,8 +31,10 @@ void destroy_nm(t_nm nm)
 
 t_nm init_nm(const char *filename)
 {
-    t_nm nm = calloc(1, sizeof(struct s_nm));
+    t_nm nm = NULL;
 
+    check_file(filename);
+    nm = calloc(1, sizeof(struct s_nm));
     if (IS_NULL(nm)) {
         printf("./my_nm: '%s': %s\n", filename, "Out of memory");
         exit(84);

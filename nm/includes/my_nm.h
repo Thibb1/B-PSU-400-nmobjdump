@@ -19,7 +19,7 @@
     #define IS_NULL(x) ((x) == NULL)
 
     #define PRINT_ERROR(error) { \
-        printf("./my_nm: '%s': %s\n", nm->name, error); \
+        printf("./my_nm: %s: %s\n", nm->name, error); \
         destroy_nm(nm); \
         exit(84); \
     }
@@ -168,4 +168,7 @@ void get_ehdr(t_nm);
 void get_shdr(t_nm);
 int get_ar(t_nm, int);
 void ar_file(t_nm);
+
+void check_file(const char *);
+
 #endif /* !MY_NM_H_ */

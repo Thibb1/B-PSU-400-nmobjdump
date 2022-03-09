@@ -11,9 +11,9 @@ off_t get_size(t_nm nm)
 {
     struct stat st;
 
-    ASSERT(fstat(fileno(nm->fd), &st) != -1, "fstat failed");
-    ASSERT(st.st_size > (off_t)sizeof(Elf64_Ehdr), "file truncated");
-    ASSERT(fseek(nm->fd, 0, SEEK_SET) == 0, "fseek failed");
+    ASSERT(fstat(fileno(nm->fd), &st) != -1, FORMAT);
+    ASSERT(st.st_size > (off_t)sizeof(Elf64_Ehdr), FORMAT);
+    ASSERT(fseek(nm->fd, 0, SEEK_SET) == 0, FORMAT);
     return st.st_size;
 }
 
@@ -21,7 +21,7 @@ void get_ehdr(t_nm nm)
 {
     EHDR = malloc(nm->size + 1);
     ASSERT(!IS_NULL(EHDR), "malloc failed");
-    ASSERT(fread(EHDR, nm->size, 1, nm->fd) == 1, "fread failed");
+    ASSERT(fread(EHDR, nm->size, 1, nm->fd) == 1, FORMAT);
     ((char *)EHDR)[nm->size] = '\0';
     ASSERT(memcmp(EHDR->e_ident, ELFMAG, SELFMAG) == 0, FORMAT);
     ARCH = EHDR->e_ident[EI_CLASS] == ELFCLASS64 ? 64 : 0;
@@ -51,7 +51,7 @@ int get_ar(t_nm nm, int skip_sym)
         DESTROY(nm->names);
         nm->names = calloc(1, nm->size + 1);
         ASSERT(!IS_NULL(nm->names), "malloc failed");
-        ASSERT(fread(nm->names, nm->size, 1, nm->fd) == 1, "fread failed");
+        ASSERT(fread(nm->names, nm->size, 1, nm->fd) == 1, FORMAT);
         ((char *)nm->names)[nm->size] = '\0';
     }
     return 1;
@@ -61,11 +61,11 @@ void ar_file(t_nm nm)
 {
     char tmp[SARMAG];
 
-    ASSERT(fread(tmp, SARMAG, 1, nm->fd) == 1, "fread failed");
+    ASSERT(fread(tmp, SARMAG, 1, nm->fd) == 1, FORMAT);
     nm->is_ar = strncmp(tmp, ARMAG, SARMAG) == 0;
     R_ASSERT(nm->is_ar);
-    ASSERT(get_ar(nm, 1), "Couldn't read ar header");
-    ASSERT(get_ar(nm, 1), "Couldn't read ar header");
+    ASSERT(get_ar(nm, 1), FORMAT);
+    ASSERT(get_ar(nm, 1), FORMAT);
     while (get_ar(nm, 0)) {
         get_ehdr(nm);
         get_shdr(nm);
