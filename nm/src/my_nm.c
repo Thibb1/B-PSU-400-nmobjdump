@@ -35,7 +35,7 @@ t_nm init_nm(const char *filename)
 
     if (IS_NULL(nm)) {
         printf("./my_nm: '%s': %s\n", filename, "Out of memory");
-        exit (84);
+        exit(84);
     }
     nm->fd = fopen(filename, "r");
     nm->name = strdup(filename);

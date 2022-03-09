@@ -33,7 +33,7 @@ t_objdump init_objdump(const char *filename)
 
     if (IS_NULL(objdump)) {
         printf("./my_objdump: '%s': %s\n", filename, "Out of memory");
-        exit (84);
+        exit(84);
     }
     objdump->fd = fopen(filename, "r");
     NAME = strdup(filename);

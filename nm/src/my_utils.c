@@ -23,7 +23,7 @@ char *capitalize(char *str)
 {
     for (int i = 0; str[i]; i++)
         str[i] -= (str[i] >= 'a' && str[i] <= 'z') ? 32 : 0;
-    return (str);
+    return str;
 }
 
 void delete_sub(const char *sub, char *trimmed)

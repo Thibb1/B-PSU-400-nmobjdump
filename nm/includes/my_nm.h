@@ -18,44 +18,43 @@
 
     #define IS_NULL(x) ((x) == NULL)
 
-    #define PRINT_ERROR(error) \
-{ \
-    printf("./my_nm: '%s': %s\n", nm->name, error); \
-    destroy_nm(nm); \
-    exit (84); \
-}
+    #define PRINT_ERROR(error) { \
+        printf("./my_nm: '%s': %s\n", nm->name, error); \
+        destroy_nm(nm); \
+        exit(84); \
+    }
+
     #define CHECK_FD \
-if (IS_NULL(nm->fd)) { \
-    PRINT_ERROR("No such file"); \
-}
+    if (IS_NULL(nm->fd)) { \
+        PRINT_ERROR("No such file"); \
+    }
 
     #define ASSERT(assert, error) \
-if (!(assert)) { \
-    PRINT_ERROR(error); \
-}
+    if (!(assert)) { \
+        PRINT_ERROR(error); \
+    }
 
     #define ASSERT_VAL(assert, result) \
-if (assert) { \
-    t = (result); \
-}
+    if (assert) { \
+        t = (result); \
+    }
 
     #define R_ASSERT_V(assert, val)  \
-if (!(assert)) { \
-    return (val); \
-}
+    if (!(assert)) { \
+        return val; \
+    }
 
     #define R_ASSERT(assert) \
-if (!(assert)) { \
-    return; \
-}
+    if (!(assert)) { \
+        return; \
+    }
 
     #define DESTROY(ptr) \
-{ \
     if (!IS_NULL(ptr)) {\
         free(ptr); \
         ptr = NULL; \
-    } \
-}
+    }
+
     #define EHDR (nm->ehdr)
     #define SHDR (nm->shdr)
     #define SBL (nm->symbols)
