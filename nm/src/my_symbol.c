@@ -32,7 +32,6 @@ void get_symbol(t_nm nm, void *ptr)
         SYM[nm->i].name = SYMBOL_NAME;
     SYM[nm->i].type = get_type(nm, ptr);
     SYM[nm->i].value = (Elf64_Addr)S_VAL;
-    SYM[nm->i].value += SYM[nm->i].value ? 0 : (Elf64_Addr)S_VAL_S;
     nm->i++;
 }
 
