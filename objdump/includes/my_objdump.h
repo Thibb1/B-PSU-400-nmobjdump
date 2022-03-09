@@ -19,7 +19,7 @@
     #define IS_NULL(x) ((x) == NULL)
 
     #define PRINT_ERROR(error) { \
-        printf("./my_objdump: '%s': %s\n", objdump->name, error); \
+        printf("./my_objdump: %s: %s\n", objdump->name, error); \
         destroy_objdump(objdump); \
         exit(84); \
     }
